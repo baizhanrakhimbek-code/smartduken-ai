@@ -1,0 +1,154 @@
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  background:#f3f6f3;
+  color:#183c30;
+  font:16px/1.5 system-ui,sans-serif
+}
+header {
+  padding:24px max(5vw,20px);
+  background:#174d3c;
+  color:white
+}
+header p {
+  margin:4px 0 0;
+  color:#d3e6db
+}
+.brand {
+  font-size:24px;
+  font-weight:750
+}
+main {
+  max-width:1240px;
+  margin:40px auto;
+  padding:0 24px;
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(280px,1fr);
+  gap:28px
+}
+section,aside {
+  background:white;
+  padding:28px;
+  border:1px solid #dce5df;
+  border-radius:16px;
+  align-self:start
+}
+.heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px
+}
+h1 {
+  font-size:32px;
+  margin:4px 0 16px
+}
+h2 {
+  margin-top:0;
+  font-size:23px
+}
+.eyebrow {
+  font-size:12px;
+  letter-spacing:2px;
+  color:#527561
+}
+.table-wrap {
+  overflow-x:auto
+}
+table {
+  border-collapse:collapse;
+  width:100%;
+  white-space:nowrap;
+  text-align:left
+}
+th,td {
+  padding:14px 12px;
+  border-bottom:1px solid #e6ede8
+}
+th {
+  font-size:13px;
+  color:#567064
+}
+.low {
+  background:#fff5dd
+}
+label {
+  display:block;
+  margin:15px 0 5px;
+  font-weight:600;
+  font-size:14px
+}
+input {
+  width:100%;
+  padding:11px;
+  border:1px solid #aebfb4;
+  border-radius:7px;
+  font:inherit;
+  min-width:0
+}
+.fields {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+button {
+  border:1px solid #aebfb4;
+  background:white;
+  color:#174d3c;
+  border-radius:7px;
+  padding:10px 16px;
+  cursor:pointer;
+  font:inherit
+}
+button:disabled {
+  opacity:.6;
+  cursor:wait
+}
+.primary {
+  margin-top:24px;
+  width:100%;
+  background:#196c4c;
+  color:white;
+  border-color:#196c4c
+}
+input:focus-visible,button:focus-visible {
+  outline:3px solid #e2a93b;
+  outline-offset:2px
+}
+.error {
+  color:#a52222
+}
+footer {
+  text-align:center;
+  padding:24px;
+  color:#567064;
+  font-size:14px
+}
+@media(max-width:850px) {
+  main {
+  grid-template-columns:1fr;
+  margin-top:24px
+}
+section,aside {
+  padding:20px
+}
+h1 {
+  font-size:28px
+}
+
+}
+
+
+.actions button+button {
+  margin-left:8px
+}
+.danger {
+  color:#a52222;
+  border-color:#d8aaaa
+}
+#cancel {
+  margin-top:12px;
+  width:100%
+}
