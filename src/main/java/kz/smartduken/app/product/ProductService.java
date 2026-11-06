@@ -10,7 +10,7 @@ import jakarta.persistence.criteria.Predicate;
 public class ProductService {
  private final ProductRepository repository;
  public ProductService(ProductRepository repository) { this.repository = repository; }
- public List<Product> findAll(String search, String category) {
+ public List<Product> findAll(String search, String category, boolean lowStock) {
   String nameFilter = search == null ? "" : search.strip().toLowerCase(Locale.ROOT);
   String categoryFilter = category == null ? "" : category.strip().toLowerCase(Locale.ROOT);
   return repository.findAll((root, query, builder) -> {
@@ -22,9 +22,13 @@ public class ProductService {
    if (!categoryFilter.isEmpty()) {
     conditions.add(builder.equal(builder.lower(root.get("category")), categoryFilter));
    }
+   if (lowStock) {
+    conditions.add(builder.lessThanOrEqualTo(root.get("stockQuantity"), root.get("minimumStock")));
+   }
    return builder.and(conditions.toArray(Predicate[]::new));
   }, Sort.by("id"));
  }
+ public ProductSummary summarize() { return repository.summarize(); }
  public List<String> findCategories() { return repository.findCategories(); }
  public Product findById(Long id) { return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id)); }
  @Transactional public Product create(ProductRequest request) { return repository.save(new Product(request)); }

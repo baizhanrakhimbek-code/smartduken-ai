@@ -99,4 +99,46 @@ class ProductCrudTest {
   mvc.perform(get("/api/products/categories"))
    .andExpect(status().isOk()).andExpect(jsonPath("$", containsInAnyOrder("Нан", "Сүт өнімдері")));
  }
+
+ private Product stockProduct(String name, String category, String price, int stock, int minimum) {
+  return repository.save(new Product(new ProductRequest(name, category, new java.math.BigDecimal(price), stock, minimum)));
+ }
+ @Test void emptyInventoryHasZeroTotals() throws Exception {
+  mvc.perform(get("/api/products/summary")).andExpect(status().isOk())
+   .andExpect(jsonPath("$.productCount").value(0)).andExpect(jsonPath("$.lowStockCount").value(0))
+   .andExpect(jsonPath("$.outOfStockCount").value(0)).andExpect(jsonPath("$.totalValue").value(0));
+ }
+ @Test void summaryUsesExactPricesAndIncludesThresholdAndZeroStock() throws Exception {
+  stockProduct("Сүт", "Сүт", "10.25", 2, 2);
+  stockProduct("Нан", "Нан", "0.10", 3, 1);
+  stockProduct("Су", null, "20.00", 0, 0);
+  mvc.perform(get("/api/products/summary")).andExpect(status().isOk())
+   .andExpect(jsonPath("$.productCount").value(3)).andExpect(jsonPath("$.lowStockCount").value(2))
+   .andExpect(jsonPath("$.outOfStockCount").value(1)).andExpect(jsonPath("$.totalValue").value(20.80));
+ }
+ @Test void lowStockCombinesWithExistingFilters() throws Exception {
+  stockProduct("Сүт аз", "Сүт", "10", 2, 2);
+  stockProduct("Сүт көп", "Сүт", "10", 3, 2);
+  stockProduct("Сүт таусылған", "Басқа", "10", 0, 0);
+  mvc.perform(get("/api/products").param("lowStock", "true"))
+   .andExpect(jsonPath("$", hasSize(2)));
+  mvc.perform(get("/api/products").param("lowStock", "false"))
+   .andExpect(jsonPath("$", hasSize(3)));
+  mvc.perform(get("/api/products").param("search", "СҮТ").param("category", "Сүт").param("lowStock", "true"))
+   .andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].name").value("Сүт аз"));
+  mvc.perform(get("/api/products").param("lowStock", "invalid")).andExpect(status().isBadRequest());
+ }
+ @Test void totalsFollowCreateUpdateAndDelete() throws Exception {
+  String body = mvc.perform(post("/api/products").contentType("application/json").content(valid))
+   .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+  long id = mapper.readTree(body).get("id").asLong();
+  mvc.perform(get("/api/products/summary")).andExpect(jsonPath("$.totalValue").value(6603.0));
+  mvc.perform(put("/api/products/{id}", id).contentType("application/json").content(valid.replace("12", "0")))
+   .andExpect(status().isOk());
+  mvc.perform(get("/api/products/summary"))
+   .andExpect(jsonPath("$.lowStockCount").value(1)).andExpect(jsonPath("$.outOfStockCount").value(1))
+   .andExpect(jsonPath("$.totalValue").value(0));
+  mvc.perform(delete("/api/products/{id}", id)).andExpect(status().isNoContent());
+  mvc.perform(get("/api/products/summary")).andExpect(jsonPath("$.productCount").value(0));
+ }
 }

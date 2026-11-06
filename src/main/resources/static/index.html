@@ -14,6 +14,16 @@
 <p>Дүкен қоры — бір жерде</p>
 </header>
 <main>
+<section class="summary" aria-labelledby="summary-title">
+<h2 id="summary-title">Дүкен қоры</h2>
+<p>Барлық өнімдер бойынша. Қоры аз өнімдер санына таусылған өнімдер де кіреді.</p>
+<dl class="summary-grid" aria-live="polite">
+<div><dt>Өнім түрлері</dt><dd id="product-count">—</dd></div>
+<div><dt>Қоры аз</dt><dd id="low-stock-count">—</dd></div>
+<div><dt>Таусылған</dt><dd id="out-of-stock-count">—</dd></div>
+<div><dt>Қордың жалпы құны</dt><dd id="total-value">—</dd></div>
+</dl>
+</section>
 <section aria-labelledby="list-title">
 <div class="heading">
 <div>
@@ -27,6 +37,7 @@
 <input id="search" type="search" placeholder="Өнім атауы" maxlength="150"></div>
 <div><label for="category-filter">Санат</label>
 <select id="category-filter"><option value="">Барлық санаттар</option></select></div>
+<div class="stock-filter"><label for="low-stock"><input id="low-stock" type="checkbox"> Қоры аз өнімдер ғана</label></div>
 <div class="filter-buttons"><button type="submit">Іздеу</button>
 <button id="clear-filters" type="button">Тазарту</button></div>
 </form>

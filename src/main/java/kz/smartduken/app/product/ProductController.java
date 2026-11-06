@@ -10,9 +10,11 @@ public class ProductController {
  public ProductController(ProductService service) { this.service = service; }
  @GetMapping public List<Product> list(
    @RequestParam(defaultValue = "") String search,
-   @RequestParam(defaultValue = "") String category) {
-  return service.findAll(search, category);
+   @RequestParam(defaultValue = "") String category,
+   @RequestParam(defaultValue = "false") boolean lowStock) {
+  return service.findAll(search, category, lowStock);
  }
+ @GetMapping("/summary") public ProductSummary summary() { return service.summarize(); }
  @GetMapping("/categories") public List<String> categories() { return service.findCategories(); }
  @GetMapping("/{id}") public Product get(@PathVariable Long id) { return service.findById(id); }
  @PostMapping public ResponseEntity<Product> create(@Valid @RequestBody ProductRequest request) {
