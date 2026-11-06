@@ -29,6 +29,7 @@ main {
   gap:28px
 }
 section,aside {
+  min-width:0;
   background:white;
   padding:28px;
   border:1px solid #dce5df;
