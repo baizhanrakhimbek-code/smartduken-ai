@@ -8,7 +8,12 @@ import java.util.List;
 public class ProductController {
  private final ProductService service;
  public ProductController(ProductService service) { this.service = service; }
- @GetMapping public List<Product> list() { return service.findAll(); }
+ @GetMapping public List<Product> list(
+   @RequestParam(defaultValue = "") String search,
+   @RequestParam(defaultValue = "") String category) {
+  return service.findAll(search, category);
+ }
+ @GetMapping("/categories") public List<String> categories() { return service.findCategories(); }
  @GetMapping("/{id}") public Product get(@PathVariable Long id) { return service.findById(id); }
  @PostMapping public ResponseEntity<Product> create(@Valid @RequestBody ProductRequest request) {
   Product product = service.create(request);

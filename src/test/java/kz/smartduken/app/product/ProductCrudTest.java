@@ -62,4 +62,41 @@ class ProductCrudTest {
    .andExpect(status().isCreated()).andExpect(jsonPath("$.price").value(0));
   mvc.perform(get("/index.html")).andExpect(status().isOk()).andExpect(content().string(containsString("lang=\"kk\"")));
  }
+
+ private void seedFilters() {
+  repository.save(new Product(new ProductRequest("Сүт 3.2%", "Сүт өнімдері", java.math.BigDecimal.ONE, 3, 1)));
+  repository.save(new Product(new ProductRequest("Сүт қосылған нан", "Нан", java.math.BigDecimal.ONE, 4, 1)));
+  repository.save(new Product(new ProductRequest("Ақ нан", "Нан", java.math.BigDecimal.ONE, 5, 1)));
+  repository.save(new Product(new ProductRequest("Су_1", null, java.math.BigDecimal.ONE, 5, 1)));
+ }
+ @Test void searchesKazakhNamesIgnoringCaseAndWhitespace() throws Exception {
+  seedFilters();
+  mvc.perform(get("/api/products").param("search", "  СҮТ  "))
+   .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(2)));
+ }
+ @Test void combinesSearchAndExactCategory() throws Exception {
+  seedFilters();
+  mvc.perform(get("/api/products").param("category", "  НАН "))
+   .andExpect(jsonPath("$", hasSize(2)));
+  mvc.perform(get("/api/products").param("search", "сүт").param("category", "нан"))
+   .andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].name").value("Сүт қосылған нан"));
+  mvc.perform(get("/api/products").param("category", "Сүт"))
+   .andExpect(jsonPath("$", hasSize(0)));
+ }
+ @Test void handlesBlankUnmatchedAndLiteralSearches() throws Exception {
+  seedFilters();
+  mvc.perform(get("/api/products").param("search", "  ").param("category", " "))
+   .andExpect(jsonPath("$", hasSize(4)));
+  mvc.perform(get("/api/products").param("search", "жоқ"))
+   .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+  mvc.perform(get("/api/products").param("search", "%"))
+   .andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].name").value("Сүт 3.2%"));
+  mvc.perform(get("/api/products").param("search", "_"))
+   .andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].name").value("Су_1"));
+ }
+ @Test void listsDistinctCategoriesWithoutMissingValues() throws Exception {
+  seedFilters();
+  mvc.perform(get("/api/products/categories"))
+   .andExpect(status().isOk()).andExpect(jsonPath("$", containsInAnyOrder("Нан", "Сүт өнімдері")));
+ }
 }

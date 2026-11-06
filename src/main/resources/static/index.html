@@ -22,6 +22,14 @@
 </div>
 <button id="refresh" type="button">Жаңарту</button>
 </div>
+<form id="filter-form" class="filters" role="search">
+<div><label for="search">Өнімді іздеу</label>
+<input id="search" type="search" placeholder="Өнім атауы" maxlength="150"></div>
+<div><label for="category-filter">Санат</label>
+<select id="category-filter"><option value="">Барлық санаттар</option></select></div>
+<div class="filter-buttons"><button type="submit">Іздеу</button>
+<button id="clear-filters" type="button">Тазарту</button></div>
+</form>
 <p id="status" role="status" aria-live="polite">
 </p>
 <div class="table-wrap">

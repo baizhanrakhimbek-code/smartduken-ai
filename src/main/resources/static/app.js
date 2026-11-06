@@ -8,6 +8,10 @@ const cancel = document.querySelector('#cancel');
 const title = document.querySelector('#form-title');
 let editingId = null;
 let saving = false;
+const filters = document.querySelector('#filter-form');
+const search = document.querySelector('#search');
+const categoryFilter = document.querySelector('#category-filter');
+let loadVersion = 0;
 const money = new Intl.NumberFormat('kk-KZ', {style: 'currency', currency: 'KZT'});
 async function request(url, options) {
   const response = await fetch(url, options);
@@ -18,11 +22,23 @@ async function request(url, options) {
   return response.status === 204 ? null : response.json();
 }
 async function loadProducts() {
+  const version = ++loadVersion;
+  const searchValue = search.value.trim();
+  const categoryValue = categoryFilter.value;
   refresh.disabled = true;
   status.className = '';
   status.textContent = 'Өнімдер жүктелуде…';
   try {
-    const products = await request('/api/products');
+    const params = new URLSearchParams({search: searchValue, category: categoryValue});
+    const [products, categories] = await Promise.all([
+      request(`/api/products?${params}`), request('/api/products/categories')
+    ]);
+    // A slower previous request must not replace newer search results.
+    if (version !== loadVersion) return;
+    categoryFilter.replaceChildren(new Option('Барлық санаттар', ''));
+    if (categoryValue && !categories.includes(categoryValue)) categories.push(categoryValue);
+    for (const category of categories) categoryFilter.add(new Option(category, category));
+    categoryFilter.value = categoryValue;
     tbody.replaceChildren();
     for (const product of products) {
       const row = document.createElement('tr');
@@ -49,12 +65,17 @@ async function loadProducts() {
       row.append(actions);
       tbody.append(row);
     }
-    document.querySelector('#empty').hidden = products.length !== 0;
-    status.textContent = `Барлығы: ${products.length} өнім. Сары жол — қор азайған өнім.`;
+    const empty = document.querySelector('#empty');
+    empty.hidden = products.length !== 0;
+    empty.textContent = searchValue || categoryValue
+      ? 'Сұрауыңызға сәйкес өнім табылмады. Іздеуді өзгертіңіз немесе сүзгілерді тазалаңыз.'
+      : 'Әзірге өнім жоқ. Алғашқы өнімді қосыңыз.';
+    status.textContent = `Көрсетілгені: ${products.length} өнім. Сары жол — қор азайған өнім.`;
   } catch (error) {
+    if (version !== loadVersion) return;
     status.className = 'error';
     status.textContent = error.message;
-  } finally { refresh.disabled = false; }
+  } finally { if (version === loadVersion) refresh.disabled = false; }
 }
 function resetEditor() {
   editingId = null;
@@ -111,5 +132,11 @@ form.addEventListener('submit', async event => {
   finally { saving = false; save.disabled = false; cancel.disabled = false; }
 });
 cancel.addEventListener('click', () => { resetEditor(); formStatus.textContent = ''; });
+filters.addEventListener('submit', event => { event.preventDefault(); loadProducts(); });
+categoryFilter.addEventListener('change', loadProducts);
+document.querySelector('#clear-filters').addEventListener('click', () => {
+  filters.reset();
+  loadProducts();
+});
 refresh.addEventListener('click', loadProducts);
 loadProducts();

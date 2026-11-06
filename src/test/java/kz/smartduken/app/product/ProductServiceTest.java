@@ -10,6 +10,6 @@ class ProductServiceTest {
   ProductService service = new ProductService(repository);
   assertTrue(assertThrows(ProductNotFoundException.class, () -> service.findById(42L)).getMessage().contains("42"));
   assertThrows(ProductNotFoundException.class, () -> service.delete(42L));
-  verify(repository, never()).delete(any());
+  verify(repository, never()).delete(any(Product.class));
  }
 }
